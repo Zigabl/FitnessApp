@@ -26,6 +26,9 @@ async function login(req, res) {
     const { email, password } = req.body;
     const user = await authService.loginUser(email, password);
 
+    req.session.userId = user._id; 
+    req.session.email = user.email;
+
     res.json({
       success: true,
       user,
@@ -40,7 +43,24 @@ async function login(req, res) {
   }
 }
 
+async function logout(req, res) {
+
+  try {
+    req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    res.json({ message: "Logged out" });
+  });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Logout failed"
+    });
+  }
+}
+
 module.exports = {
   register,
-  login
+  login,
+  logout
 };

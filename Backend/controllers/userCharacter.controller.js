@@ -4,7 +4,8 @@ async function create(req, res) {
 
   try {
     const { name } = req.body;
-    const userCharacter = await userCharacterService.createUserCharacter(name);
+    const userId = req.session.userId; 
+    const userCharacter = await userCharacterService.createUserCharacter(userId, name);
 
     res.json({
       success: true,

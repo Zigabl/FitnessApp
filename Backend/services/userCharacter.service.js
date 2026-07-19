@@ -1,9 +1,9 @@
 const userCharacters = require("../models/userCharacter");
 
-async function createUserCharacter(name) {
+async function createUserCharacter(userId, name) {
 
-  if (!name) {
-    throw new Error("Name is required");
+  if (!name || !userId) {
+    throw new Error("Name and user ID are required");
   }
   
   const existingCharacter = await userCharacters.findOne({ name });
@@ -12,7 +12,7 @@ async function createUserCharacter(name) {
     throw new Error("Name already in use");
   }
 
-  const userCharacter = new userCharacters({ name, health: 100, strength: 10, intelligence: 10 }); //default stats for every new character
+  const userCharacter = new userCharacters({ userId, name, health: 100, strength: 10, intelligence: 10 }); //default stats for every new character
 
   await userCharacter.save();
 
