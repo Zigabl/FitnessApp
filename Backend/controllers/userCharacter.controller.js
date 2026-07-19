@@ -20,6 +20,28 @@ async function create(req, res) {
   }
 }
 
+async function getOne(req, res) {
+
+  try {
+    const { id } = req.params;
+    const userCharacter = await userCharacterService.getUserCharacter(id);
+
+    res.json({
+      success: true,
+      userCharacter,
+      message: "User character retrieved successfully"
+    });
+
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+
 module.exports = {
-  create
+  create,
+  getOne
 };

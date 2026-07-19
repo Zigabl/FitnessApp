@@ -19,6 +19,22 @@ async function createUserCharacter(name) {
   return userCharacter;
 }
 
+async function getUserCharacter(id) {
+
+  if (!id) {
+    throw new Error("ID is required");
+  }
+
+  const userCharacter = await userCharacters.findById(id);
+
+  if (!userCharacter) {
+    throw new Error("User character not found");
+  }
+
+  return userCharacter;
+}
+
 module.exports = {
   createUserCharacter,
+  getUserCharacter
 };
