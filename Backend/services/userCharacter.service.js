@@ -34,7 +34,23 @@ async function getUserCharacter(id) {
   return userCharacter;
 }
 
+async function getMyCharacter(userId) {
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  const userCharacter = await userCharacters.findOne({ userId });
+
+  if (!userCharacter) {
+    throw new Error("Your character not found");
+  }
+
+  return userCharacter;
+}
+
 module.exports = {
   createUserCharacter,
-  getUserCharacter
+  getUserCharacter,
+  getMyCharacter
 };

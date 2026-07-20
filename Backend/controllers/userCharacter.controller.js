@@ -41,8 +41,29 @@ async function getOne(req, res) {
   }
 }
 
+async function getMe(req, res) {
+
+  try {
+    const userId = req.session.userId;
+    const userCharacter = await userCharacterService.getMyCharacter(userId);
+
+    res.json({
+      success: true,
+      userCharacter,
+      message: "Your character retrieved successfully"
+    });
+
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
 
 module.exports = {
   create,
-  getOne
+  getOne,
+  getMe
 };

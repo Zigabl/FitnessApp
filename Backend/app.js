@@ -5,6 +5,7 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo").default;
 const userCharacterRoutes = require("./routes/userCharacter.routes");
 const authRoutes = require("./routes/auth.routes");
+const workoutRoutes = require("./routes/workout.routes");
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/userCharacter", userCharacterRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/workout", workoutRoutes);
 
 module.exports = app;

@@ -8,4 +8,4 @@ const userCharacterSchema = new mongoose.Schema({
   intelligence: { type: Number, required: true }
 });
 
-module.exports = mongoose.model("UserCharacters", userCharacterSchema);
+module.exports = mongoose.model("UserCharacter", userCharacterSchema);
