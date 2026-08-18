@@ -49,8 +49,13 @@ async function getMyCharacter(userId) {
   return userCharacter;
 }
 
+async function getAllUserCharacters() {
+  return await userCharacters.find();
+}
+
 module.exports = {
   createUserCharacter,
   getUserCharacter,
-  getMyCharacter
+  getMyCharacter,
+  getAllUserCharacters
 };
