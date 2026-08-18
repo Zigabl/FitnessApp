@@ -17,6 +17,33 @@ async function createWorkout(userId, title, durationHours, notes, imagePath) {
  
 }
 
+async function getAllUserWorkouts(userId) {
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  } 
+
+  return await workouts.find({ userId });
+ 
+}
+
+async function getWorkout(id) {
+
+  if (!id) {
+    throw new Error("ID is required");
+  }
+
+  const workout = await workouts.findById(id);
+
+  if (!workout) {
+    throw new Error("Workout not found");
+  }
+
+  return workout;
+}
+
 module.exports = {
-  createWorkout
+  createWorkout,
+  getAllUserWorkouts,
+  getWorkout
 };

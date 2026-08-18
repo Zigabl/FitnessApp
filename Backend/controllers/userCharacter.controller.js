@@ -24,7 +24,7 @@ async function create(req, res) {
 async function getOne(req, res) {
 
   try {
-    const { id } = req.params;
+    const { id } = req.params; //const name need to match the name in the route, which is id in this case
     const userCharacter = await userCharacterService.getUserCharacter(id);
 
     res.json({
@@ -61,9 +61,29 @@ async function getMe(req, res) {
   }
 }
 
+async function getAll(req, res) {
+
+  try {
+    const userCharacters = await userCharacterService.getAllUserCharacters();
+
+    res.json({
+      success: true,
+      userCharacters,
+      message: "All user characters retrieved successfully"
+    });
+
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
 
 module.exports = {
   create,
   getOne,
-  getMe
+  getMe,
+  getAll
 };

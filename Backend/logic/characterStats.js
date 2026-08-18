@@ -16,6 +16,22 @@ function applyStrengthBuff(durationHours, characterStrength) {
 
 }
 
+function applyHealthBuff(protein, characterHealth) {
+
+    if (protein < 20) {
+        return characterHealth + 1;
+    }
+    else if (protein >= 20 && protein < 30) {
+        return characterHealth + 2;
+    }
+    else if (protein >= 30 && protein < 40) {
+        return characterHealth + 3;
+    }
+
+    return characterHealth + 5;
+
+}
+
 async function buffCharacterStrength(userId, durationHours) {
 
     const character = await userCharacters.findOne({ userId });
@@ -32,7 +48,23 @@ async function buffCharacterStrength(userId, durationHours) {
  
 }
 
+async function buffCharacterHealth(userId, protein) {
+
+    const character = await userCharacters.findOne({ userId });
+
+    if (!character) {
+        throw new Error("Character not found to buff health");
+    }
+
+    character.health = await applyHealthBuff(protein, character.health);
+
+    console.log(`Buffed character health for user ${userId}. New health: ${character.health}`);
+
+    await character.save();
+ 
+}
 
 module.exports = {
-  buffCharacterStrength
+  buffCharacterStrength,
+  buffCharacterHealth
 };
