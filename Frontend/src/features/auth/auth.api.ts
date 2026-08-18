@@ -1,26 +1,23 @@
-import { LoginRequest, LoginResponse } from './auth.types';
+import { api } from '../../services/api';
+import { LoginRequest, RegisterRequest, AuthResponse } from './auth.types';
 
-// Temporary fake login. This will later be replaced with a real API request.
+// Replace the endpoint below with the real endpoint from your Express backend.
 export async function login(
   credentials: LoginRequest,
-): Promise<LoginResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 700));
+): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>('/auth/login', credentials);
 
-  const validEmail = 'test@example.com';
-  const validPassword = 'password';
+  return response.data;
+}
 
-  if (
-    credentials.email.trim().toLowerCase() !== validEmail ||
-    credentials.password !== validPassword
-  ) {
-    throw new Error('Napačen e-mail ali geslo.');
-  }
+export async function register(
+  credentials: RegisterRequest,
+): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>('/auth/register', credentials);
 
-  return {
-    token: 'fake-jwt-token',
-    user: {
-      id: '1',
-      email: validEmail,
-    },
-  };
+  return response.data;
+}
+
+export async function logout(): Promise<void> {
+  await api.post('/auth/logout');
 }

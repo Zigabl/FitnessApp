@@ -1,4 +1,7 @@
+import { AuthUser } from '../features/auth/auth.types';
+import { logout } from '../features/auth/auth.api';
 import { useState } from 'react';
+import { api } from '../services/api';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -9,42 +12,35 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { login } from '../auth.api';
-import { AuthUser } from '../auth.types';
 
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../../app/navigation/AppNavigator';
+interface CharacterScreenProps {
+  user: AuthUser;
+  onLogout: () => void;
+}
 
-type LoginScreenProps =
-  NativeStackScreenProps<RootStackParamList, 'Login'> & {
-    onLogin: (user: AuthUser) => void;
-  };
+export default function CharacterScreen({ user, onLogout }: CharacterScreenProps) {
 
-export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin() {
+  async function handleCharacterCreate() {
     setError('');
-
-    if (!email.trim() || !password) {
-      setError('Enter an e-mail and a password.');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const response = await login({ email, password });
-      onLogin(response.user);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Login unsuccessful.';
 
-      setError(message);
-    } finally {
+      const response = await api.post(
+        '/userCharacter/create',
+        {
+          name,
+        }
+      );
+
+    } catch (error) {
+      console.error(error);
+    }
+    finally {
       setLoading(false);
     }
   }
@@ -55,26 +51,16 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Login</Text>
-        <Text style={styles.subtitle}>Login into the application</Text>
+        <Text style={styles.title}>Custom name</Text>
+        <Text style={styles.subtitle}>Set your custom name.</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="E-mail"
-          value={email}
-          onChangeText={setEmail}
+          placeholder="Custom name"
+          value={name}
+          onChangeText={setName}
           autoCapitalize="none"
           autoCorrect={false}
-          keyboardType="email-address"
-          editable={!loading}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
           editable={!loading}
         />
 
@@ -82,25 +68,18 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
+          onPress={handleCharacterCreate}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={styles.buttonText}>Confirm</Text>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Register')}
-          disabled={loading}
-        >
-          <Text>Don't have an account yet? Register here.</Text>
-        </TouchableOpacity>
-
         <Text style={styles.hint}>
-          Endpoint: POST /api/auth/login
+          Endpoint: POST ???
         </Text>
       </View>
     </KeyboardAvoidingView>

@@ -9,39 +9,43 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { login } from '../auth.api';
+import { register } from '../auth.api';
 import { AuthUser } from '../auth.types';
-
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../app/navigation/AppNavigator';
 
-type LoginScreenProps =
-  NativeStackScreenProps<RootStackParamList, 'Login'> & {
-    onLogin: (user: AuthUser) => void;
-  };
+type Props = NativeStackScreenProps<
+  RootStackParamList,
+  'Register'
+>;
 
-export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
+interface RegisterScreenProps {
+  onRegister: (user: AuthUser) => void;
+}
+
+export default function RegisterScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin() {
+  async function handleRegister() {
     setError('');
 
     if (!email.trim() || !password) {
-      setError('Enter an e-mail and a password.');
+      setError('Vnesi e-mail in geslo.');
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await login({ email, password });
-      onLogin(response.user);
+      await register({ email, password });
+
+      navigation.navigate('Login');
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Login unsuccessful.';
+        err instanceof Error ? err.message : 'Registracija ni uspela.';
 
       setError(message);
     } finally {
@@ -55,8 +59,8 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Login</Text>
-        <Text style={styles.subtitle}>Login into the application</Text>
+        <Text style={styles.title}>Registracija</Text>
+        <Text style={styles.subtitle}>Registriraj se v aplikacijo</Text>
 
         <TextInput
           style={styles.input}
@@ -82,25 +86,18 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
+          onPress={handleRegister}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={styles.buttonText}>Registration</Text>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Register')}
-          disabled={loading}
-        >
-          <Text>Don't have an account yet? Register here.</Text>
-        </TouchableOpacity>
-
         <Text style={styles.hint}>
-          Endpoint: POST /api/auth/login
+          Endpoint: POST /api/auth/register
         </Text>
       </View>
     </KeyboardAvoidingView>

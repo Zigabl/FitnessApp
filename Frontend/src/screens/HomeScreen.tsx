@@ -1,5 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AuthUser } from '../features/auth/auth.types';
+import { logout } from '../features/auth/auth.api';
+import { useState } from 'react';
 
 interface HomeScreenProps {
   user: AuthUser;
@@ -7,12 +9,35 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ user, onLogout }: HomeScreenProps) {
+
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogout() {
+    setError('');
+    setLoading(true);
+
+    try {
+      await logout();
+      onLogout();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Odjava ni uspela.';
+
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles.container}>
+
+
       <Text style={styles.title}>Prijavljen si!</Text>
       <Text style={styles.email}>{user.email}</Text>
 
-      <TouchableOpacity style={styles.button} onPress={onLogout}>
+      <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <Text style={styles.buttonText}>Odjava</Text>
       </TouchableOpacity>
     </View>
