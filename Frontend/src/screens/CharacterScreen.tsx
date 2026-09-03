@@ -13,6 +13,9 @@ import {
   View,
 } from 'react-native';
 
+import { colors } from '../theme/colors';
+import { spacing } from '../theme/spacing';
+
 interface CharacterScreenProps {
   user: AuthUser;
   onLogout: () => void;
@@ -51,8 +54,8 @@ export default function CharacterScreen({ user, onLogout }: CharacterScreenProps
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Custom name</Text>
-        <Text style={styles.subtitle}>Set your custom name.</Text>
+        <Text style={styles.title}>Custom character name</Text>
+        <Text style={styles.subtitle}>Set a custom name for your character.</Text>
 
         <TextInput
           style={styles.input}
@@ -89,58 +92,75 @@ export default function CharacterScreen({ user, onLogout }: CharacterScreenProps
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  content: {
-    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    width: '100%',
-    maxWidth: 440,
-    alignSelf: 'center',
+    padding: 24,
   },
+
+  content: {
+    padding: spacing.lg,
+  },
+
   title: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '700',
-    marginBottom: 8,
+    color: colors.text,
+    marginBottom: spacing.sm,
   },
+
   subtitle: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 32,
+    color: colors.textSecondary,
+    marginBottom: spacing.xl,
   },
+
   input: {
     height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    borderWidth: 2,
+    color: colors.textSecondary,
+    borderColor: colors.primary,
     borderRadius: 8,
     paddingHorizontal: 14,
     marginBottom: 12,
     fontSize: 16,
   },
   error: {
-    color: '#c62828',
+    color: colors.error,
     marginBottom: 12,
   },
+
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
   button: {
-    height: 50,
-    borderRadius: 8,
-    backgroundColor: '#222',
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
   },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
+
   buttonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
+
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+
   hint: {
     textAlign: 'center',
-    color: '#777',
-    marginTop: 20,
+    color: colors.textSecondary,
+    marginTop: spacing.lg,
     fontSize: 13,
   },
 });

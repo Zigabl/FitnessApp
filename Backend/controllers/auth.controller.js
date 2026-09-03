@@ -59,8 +59,35 @@ async function logout(req, res) {
   }
 }
 
+
+
+// -----=====[ DODAL NOV FUNCTION ]=====-----
+async function getCurrentUser(req, res) {
+  try {
+    const user = {
+      id: req.session.userId,
+      email: req.session.email
+    };
+
+    res.json({
+      success: true,
+      user
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get current user"
+    });
+  }
+}
+// -----=====[ DODAL NOV FUNCTION ]=====-----
+
+
+
 module.exports = {
   register,
   login,
-  logout
+  logout,
+  getCurrentUser // NOVA STVAR
 };

@@ -6,6 +6,9 @@ import WorkoutScreen from '../../screens/WorkoutScreen';
 import CharacterScreen from '../../screens/CharacterScreen';
 import { AuthUser } from '../../features/auth/auth.types';
 
+import { colors } from '../../theme/colors';
+import { spacing } from '../../theme/spacing';
+
 export type MainTabParamList = {
   Home: undefined;
   Character: undefined;
@@ -25,7 +28,23 @@ export default function MainNavigator({
   onLogout,
 }: MainNavigatorProps) {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: colors.primaryLight,
+          borderTopColor: colors.border,
+        },
+
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.text,
+
+        headerStyle: {
+          backgroundColor: colors.primary,
+        },
+
+        headerTintColor: colors.background,
+      }}
+    >
       <Tab.Screen
         name="Home"
         options={{ title: 'Home' }}

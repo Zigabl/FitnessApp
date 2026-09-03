@@ -14,5 +14,7 @@ export interface AuthUser {
 }
 
 export interface AuthResponse {
+  success: boolean; // NOVO
   user: AuthUser;
+  message?: string; //NOVO
 }

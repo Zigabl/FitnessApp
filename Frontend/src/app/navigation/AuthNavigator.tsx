@@ -4,6 +4,9 @@ import LoginScreen from '../../features/auth/screens/LoginScreen';
 import RegisterScreen from '../../features/auth/screens/RegisterScreen';
 import { AuthUser } from '../../features/auth/auth.types';
 
+import { colors } from '../../theme/colors';
+import { spacing } from '../../theme/spacing';
+
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -19,7 +22,16 @@ export default function AuthNavigator({
   onLogin,
 }: AuthNavigatorProps) {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+
+        headerStyle: {
+          backgroundColor: colors.primary,
+        },
+
+        headerTintColor: colors.background,
+      }}
+    >
       <Stack.Screen
         name="Login"
         options={{ title: 'Login' }}
