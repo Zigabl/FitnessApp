@@ -17,6 +17,20 @@ import {
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 
+import {
+  useNavigation,
+} from '@react-navigation/native';
+
+import {
+  NativeStackNavigationProp,
+} from '@react-navigation/native-stack';
+
+import {
+  MainStackParamList,
+} from '../app/navigation/MainNavigator';
+
+type MealNavigationProp = NativeStackNavigationProp<MainStackParamList>;
+
 interface Meal {
   _id: string;
   title: string;
@@ -37,6 +51,8 @@ export default function MealScreen({
   user,
   onLogout,
 }: MealScreenProps) {
+
+  const navigation = useNavigation<MealNavigationProp>();
 
   const [title, setTitle] = useState('');
   const [calories, setCalories] = useState('');
@@ -103,7 +119,13 @@ export default function MealScreen({
 
   function renderMeal({ item }: { item: Meal }) {
     return (
-      <View style={styles.mealCard}>
+      <TouchableOpacity style={styles.mealCard}
+        onPress={() => {
+          navigation.navigate('MealDetail', {
+            id: item._id,
+          });
+        }}
+      >
         <Text style={styles.mealTitle}>
           {item.title}
         </Text>
@@ -127,7 +149,7 @@ export default function MealScreen({
         <Text style={styles.mealInfo}>
           Note: {item.notes}
         </Text>
-      </View>
+      </TouchableOpacity>
     );
   }
 

@@ -1,13 +1,14 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import HomeScreen from '../../screens/HomeScreen';
-import MealScreen from '../../screens/MealScreen';
-import WorkoutScreen from '../../screens/WorkoutScreen';
-import CharacterScreen from '../../screens/CharacterScreen';
 import { AuthUser } from '../../features/auth/auth.types';
 
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
+import HomeScreen from '../../screens/HomeScreen';
+import CharacterScreen from '../../screens/CharacterScreen';
+import MealScreen from '../../screens/MealScreen';
+import WorkoutScreen from '../../screens/WorkoutScreen';
+import MealDetailScreen from '../../screens/MealDetailScreen';
+import WorkoutDetailScreen from '../../screens/WorkoutDetailScreen';
 
 export type MainTabParamList = {
   Home: undefined;
@@ -16,39 +17,31 @@ export type MainTabParamList = {
   Workout: undefined;
 };
 
+export type MainStackParamList = {
+  MainTabs: undefined;
+
+  MealDetail: {
+    id: string;
+  };
+};
+
 const Tab = createBottomTabNavigator<MainTabParamList>();
+const Stack = createNativeStackNavigator<MainStackParamList>();
 
 interface MainNavigatorProps {
   user: AuthUser;
   onLogout: () => void;
 }
 
-export default function MainNavigator({
+function MainTabs({
   user,
   onLogout,
 }: MainNavigatorProps) {
+
   return (
-    <Tab.Navigator
-      screenOptions={{
-        tabBarStyle: {
-          backgroundColor: colors.primaryLight,
-          borderTopColor: colors.border,
-        },
+    <Tab.Navigator>
 
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.text,
-
-        headerStyle: {
-          backgroundColor: colors.primary,
-        },
-
-        headerTintColor: colors.background,
-      }}
-    >
-      <Tab.Screen
-        name="Home"
-        options={{ title: 'Home' }}
-      >
+      <Tab.Screen name="Home">
         {() => (
           <HomeScreen
             user={user}
@@ -57,23 +50,75 @@ export default function MainNavigator({
         )}
       </Tab.Screen>
 
-      <Tab.Screen
-        name="Character"
-        component={CharacterScreen}
-        options={{ title: 'Character' }}
-      />
+      <Tab.Screen name="Character">
+        {() => (
+          <CharacterScreen
+            user={user}
+            onLogout={onLogout}
+          />
+        )}
+      </Tab.Screen>
 
-      <Tab.Screen
-        name="Meal"
-        component={MealScreen}
-        options={{ title: 'Meals' }}
-      />
+      <Tab.Screen name="Meal">
+        {() => (
+          <MealScreen
+            user={user}
+            onLogout={onLogout}
+          />
+        )}
+      </Tab.Screen>
 
-      <Tab.Screen
-        name="Workout"
-        component={WorkoutScreen}
-        options={{ title: 'Workout' }}
-      />
+      <Tab.Screen name="Workout">
+        {() => (
+          <WorkoutScreen
+            user={user}
+            onLogout={onLogout}
+          />
+        )}
+      </Tab.Screen>
+
     </Tab.Navigator>
+  );
+}
+
+export default function MainNavigator({
+  user,
+  onLogout,
+}: MainNavigatorProps) {
+
+  return (
+    <Stack.Navigator>
+
+      <Stack.Screen
+        name="MainTabs"
+        options={{
+          headerShown: false,
+        }}
+      >
+        {() => (
+          <MainTabs
+            user={user}
+            onLogout={onLogout}
+          />
+        )}
+      </Stack.Screen>
+
+      <Stack.Screen
+        name="MealDetail"
+        component={MealDetailScreen}
+        options={{
+          title: 'Meal details',
+        }}
+      />
+
+      <Stack.Screen
+        name="WorkoutDetail"
+        component={WorkoutDetailScreen}
+        options={{
+          title: 'Workout details',
+        }}
+      />
+
+    </Stack.Navigator>
   );
 }
