@@ -75,9 +75,28 @@ async function getAll(req, res) {
   }
 }
 
+async function deleteOne(req, res) {
+
+  try {
+    const { id } = req.params; 
+    const meal = await workoutService.deleteMeal(id);
+
+    res.json({
+      success: true,
+      meal
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
 module.exports = {
   create,
   getAll,     
   getOne,
-  getAllUser
+  getAllUser,
+  deleteOne
 };

@@ -1,5 +1,7 @@
 const meals = require("../models/meal");
 const characterStats = require("../logic/characterStats");
+const fs = require("fs/promises");
+const path = require("path");
 
 async function createMeal(userId, title, protein, carbs, fats, calories, notes, imagePath) {
 
@@ -46,10 +48,41 @@ async function getAllMeals() {
   return await meals.find();
 }
 
+async function deleteMeal(id) {
+
+  if (!id) {
+    throw new Error("ID is required");
+  }
+
+  const meal = await meals.findById(id);
+
+  if (!meal) {
+    throw new Error("Meal not found");
+  }
+
+  if (meal.imagePath) {
+
+    const imagePath = path.resolve(meal.imagePath);
+
+    try {
+      await fs.unlink(imagePath);
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        throw error;
+      }
+    }
+  }
+
+  await meal.deleteOne();
+
+  return meal;
+}
+
 
 module.exports = {
   createMeal,
   getAllUserMeals,
   getMeal,
-  getAllMeals
+  getAllMeals,
+  deleteMeal
 };

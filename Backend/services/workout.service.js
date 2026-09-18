@@ -1,5 +1,7 @@
 const workouts = require("../models/workout");
 const characterStats = require("../logic/characterStats");
+const fs = require("fs/promises");
+const path = require("path");
 
 async function createWorkout(userId, title, durationHours, notes, imagePath) {
 
@@ -42,8 +44,39 @@ async function getWorkout(id) {
   return workout;
 }
 
+async function deleteWorkout(id) {
+
+  if (!id) {
+    throw new Error("ID is required");
+  }
+
+  const workout = await workouts.findById(id);
+
+  if (!workout) {
+    throw new Error("Workout not found");
+  }
+
+  if (workout.imagePath) {
+
+    const imagePath = path.resolve(workout.imagePath);
+
+    try {
+      await fs.unlink(imagePath);
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        throw error;
+      }
+    }
+  }
+
+  await workout.deleteOne();
+
+  return workout;
+}
+
 module.exports = {
   createWorkout,
   getAllUserWorkouts,
-  getWorkout
+  getWorkout,
+  deleteWorkout
 };

@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/auth.middleware");
 const uploadWorkoutMiddleware = require("../middleware/workoutImage.middleware");
 
 router.post("/create", authMiddleware, uploadWorkoutMiddleware.single("workoutImage"), controller.create);
+router.delete("/delete/:id", authMiddleware, controller.deleteOne);
 
 router.get("/all", authMiddleware, controller.getAll);
 router.get("/get/:id", authMiddleware, controller.getOne); 

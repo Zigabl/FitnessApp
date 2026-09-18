@@ -58,8 +58,27 @@ async function getOne(req, res) {
   }
 }
 
+async function deleteOne(req, res) {
+
+  try {
+    const { id } = req.params; 
+    const workout = await workoutService.deleteWorkout(id);
+
+    res.json({
+      success: true,
+      workout
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
 module.exports = {
   create,
   getAll,     
-  getOne
+  getOne,
+  deleteOne
 };
