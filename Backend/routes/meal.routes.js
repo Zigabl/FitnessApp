@@ -3,7 +3,7 @@ const router = express.Router();
 
 const controller = require("../controllers/meal.controller");
 const authMiddleware = require("../middleware/auth.middleware");
-const uploadMealMiddleware = require("../middleware/workoutImage.middleware"); //image upload
+const uploadMealMiddleware = require("../middleware/mealImage.middleware"); //image upload
 
 router.post("/create", authMiddleware, uploadMealMiddleware.single("mealImage"), controller.create);
 
