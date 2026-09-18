@@ -2,6 +2,7 @@ import { AuthUser } from '../features/auth/auth.types';
 import { logout } from '../features/auth/auth.api';
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
+import * as ImagePicker from 'expo-image-picker';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,6 +13,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 
 import { colors } from '../theme/colors';
@@ -52,6 +54,10 @@ export default function MealScreen({
   onLogout,
 }: MealScreenProps) {
 
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
   const navigation = useNavigation<MealNavigationProp>();
 
   const [title, setTitle] = useState('');
@@ -66,6 +72,29 @@ export default function MealScreen({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  async function pickImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+
+      setImageUri(asset.uri);
+      setImageName(asset.fileName ?? 'meal-image.jpg');
+
+      if (asset.file) {
+        setImageFile(asset.file);
+      }
+    }
+  }
+
+  function getImageUrl(imagePath: string) {
+    return `http://localhost:3000/${imagePath.replace(/\\/g, '/')}`;
+  }
 
   async function fetchMeals() {
     try {
@@ -91,14 +120,28 @@ export default function MealScreen({
     setLoading(true);
 
     try {
-      await api.post('/meal/create', {
-        title,
-        calories,
-        protein,
-        carbs,
-        fats,
-        notes,
-      });
+      const formData = new FormData();
+
+      formData.append(
+        'meal',
+        JSON.stringify({
+          title,
+          calories,
+          protein,
+          carbs,
+          fats,
+          notes,
+        })
+      );
+
+      if (imageFile) {
+        formData.append(
+          'mealImage',
+          imageFile
+        );
+      }
+
+      await api.post('/meal/create', formData);
 
       setTitle('');
       setCalories('');
@@ -106,11 +149,14 @@ export default function MealScreen({
       setCarbs('');
       setFats('');
       setNotes('');
+      setImageUri(null);
+      setImageName(null);
+      setImageFile(null);
 
       await fetchMeals();
 
     } catch (error) {
-      console.error(error);
+      console.error('Meal creation failed:', error);
       setError('Meal could not be created.');
     } finally {
       setLoading(false);
@@ -126,29 +172,55 @@ export default function MealScreen({
           });
         }}
       >
-        <Text style={styles.mealTitle}>
-          {item.title}
-        </Text>
 
-        <Text style={styles.mealInfo}>
-          Calories: {item.calories} kcal
-        </Text>
+        <View style={styles.mealCardContent}>
 
-        <Text style={styles.mealInfo}>
-          Protein: {item.protein} g
-        </Text>
+          {/* INFORMATION - approximately 2/3 of the card */}
+          <View style={styles.mealInfoContainer}>
+            <Text style={styles.mealTitle}>
+              {item.title}
+            </Text>
 
-        <Text style={styles.mealInfo}>
-          Carbs: {item.carbs} g
-        </Text>
+            <Text style={styles.mealInfo}>
+              Calories: {item.calories} kcal
+            </Text>
 
-        <Text style={styles.mealInfo}>
-          Fats: {item.fats} g
-        </Text>
+            <Text style={styles.mealInfo}>
+              Protein: {item.protein} g
+            </Text>
 
-        <Text style={styles.mealInfo}>
-          Note: {item.notes}
-        </Text>
+            <Text style={styles.mealInfo}>
+              Carbs: {item.carbs} g
+            </Text>
+
+            <Text style={styles.mealInfo}>
+              Fats: {item.fats} g
+            </Text>
+
+            <Text style={styles.mealInfo}>
+              Note: {item.notes}
+            </Text>
+          </View>
+
+          {/* IMAGE - approximately 1/3 of the card */}
+          <View style={styles.mealImageContainer}>
+            {item.imagePath ? (
+              <Image
+                source={{
+                  uri: getImageUrl(item.imagePath),
+                }}
+                style={styles.mealImage}
+              />
+            ) : (
+              <View style={styles.noImage}>
+                <Text style={styles.noImageText}>
+                  No image
+                </Text>
+              </View>
+            )}
+          </View>
+
+        </View>
       </TouchableOpacity>
     );
   }
@@ -246,6 +318,23 @@ export default function MealScreen({
               editable={!loading}
             />
 
+            <TouchableOpacity
+              style={styles.imageButton}
+              onPress={pickImage}
+              disabled={loading}
+            >
+              <Text style={styles.imageButtonText}>
+                {imageUri ? 'Change image' : 'Choose image'}
+              </Text>
+            </TouchableOpacity>
+
+            {imageUri && (
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.previewImage}
+              />
+            )}
+
             {error ? (
               <Text style={styles.error}>
                 {error}
@@ -338,6 +427,42 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
 
+  mealCardContent: {
+    flexDirection: 'row',
+  },
+
+  mealImageContainer: {
+    width: '33%',
+    height: 120,
+    marginRight: spacing.md,
+  },
+
+  mealImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    resizeMode: 'cover',
+  },
+
+  noImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    backgroundColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  noImageText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+
+  mealInfoContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+
   mealTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -388,5 +513,28 @@ const styles = StyleSheet.create({
 
   buttonDisabled: {
     opacity: 0.6,
+  },
+
+  imageButton: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+
+  imageButtonText: {
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: spacing.md,
   },
 });

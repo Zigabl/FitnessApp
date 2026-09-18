@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -38,6 +39,10 @@ export default function MealDetailScreen({
 
   const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState(true);
+
+  function getImageUrl(imagePath: string) {
+    return `http://localhost:3000/${imagePath.replace(/\\/g, '/')}`;
+  }
 
   useEffect(() => {
     async function fetchMeal() {
@@ -84,6 +89,15 @@ export default function MealDetailScreen({
         <Text style={styles.subtitle}>
           Meal details
         </Text>
+
+        {meal.imagePath && (
+          <Image
+            source={{
+              uri: getImageUrl(meal.imagePath),
+            }}
+            style={styles.detailImage}
+          />
+        )}
 
         <View style={styles.card}>
 
@@ -235,5 +249,13 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.error,
     fontSize: 16,
+  },
+
+  detailImage: {
+    width: '100%',
+    height: 350,
+    borderRadius: 16,
+    marginBottom: spacing.lg,
+    resizeMode: 'cover',
   },
 });

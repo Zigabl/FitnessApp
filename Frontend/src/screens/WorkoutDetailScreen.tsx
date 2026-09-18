@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
 
 import { api } from '../services/api';
 import { colors } from '../theme/colors';
@@ -33,6 +37,11 @@ export default function WorkoutDetailScreen({
   route,
 }: WorkoutDetailScreenProps) {
 
+  const navigation = useNavigation();
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const { id } = route.params;
 
   const [workout, setWorkout] = useState<Workout | null>(null);
@@ -40,6 +49,22 @@ export default function WorkoutDetailScreen({
 
   function getImageUrl(imagePath: string) {
     return `http://localhost:3000/${imagePath.replace(/\\/g, '/')}`;
+  }
+
+  async function handleDelete() {
+    try {
+      setDeleting(true);
+
+      await api.delete(`/workout/delete/${id}`);
+
+      setShowDeleteModal(false);
+      navigation.goBack();
+
+    } catch (error) {
+      console.error('Failed to delete workout:', error);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   useEffect(() => {
@@ -123,7 +148,62 @@ export default function WorkoutDetailScreen({
           </View>
         )}
 
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => setShowDeleteModal(true)}
+        >
+          <Text style={styles.deleteButtonText}>
+            Delete
+          </Text>
+        </TouchableOpacity>
+
       </View>
+
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>
+              Delete workout?
+            </Text>
+
+            <Text style={styles.modalText}>
+              Are you sure you want to delete "{workout.title}"?
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowDeleteModal(false)}
+                disabled={deleting}
+              >
+                <Text style={styles.cancelButtonText}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.confirmDeleteButton}
+                onPress={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <ActivityIndicator color={colors.white} />
+                ) : (
+                  <Text style={styles.deleteButtonText}>
+                    Delete
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 }
@@ -221,5 +301,75 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: spacing.lg,
     resizeMode: 'cover',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalContainer: {
+    width: '90%',
+    maxWidth: 450,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: spacing.xl,
+  },
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+
+  modalText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: spacing.xl,
+  },
+
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: spacing.md,
+  },
+
+  cancelButton: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
+  cancelButtonText: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  confirmDeleteButton: {
+    backgroundColor: '#c62828',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 10,
+  },
+
+  deleteButton: {
+    marginTop: spacing.xl,
+    alignSelf: 'flex-end',
+    backgroundColor: '#c62828',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 10,
+  },
+
+  deleteButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
