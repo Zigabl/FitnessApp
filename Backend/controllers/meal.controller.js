@@ -3,7 +3,8 @@ const workoutService= require("../services/meal.service");
 async function create(req, res) {
 
   try {
-    const { title, protein, carbs, fats, calories, notes, imagePath } = req.body; //{} are used for deconstructing the object, so we can get the values directly from the body instead of using req.body.title
+    const { title, protein, carbs, fats, calories, notes } = JSON.parse(req.body.meal); 
+    const imagePath = req.file ? req.file.path : null;
     const userId = req.session.userId;
     const meal = await workoutService.createMeal(userId, title, protein, carbs, fats, calories, notes, imagePath);
 
