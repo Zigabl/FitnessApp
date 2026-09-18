@@ -8,6 +8,8 @@ const authRoutes = require("./routes/auth.routes");
 const workoutRoutes = require("./routes/workout.routes");
 const mealRoutes = require("./routes/meal.routes");
 
+const path = require('path');
+
 const app = express();
 
 app.use(cors({
@@ -34,6 +36,7 @@ app.get("/", (req, res) => {
   res.send("Fitness app API is running");
 });
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/api/userCharacter", userCharacterRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/workout", workoutRoutes);

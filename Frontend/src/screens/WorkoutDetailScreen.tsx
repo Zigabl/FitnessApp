@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -36,6 +37,10 @@ export default function WorkoutDetailScreen({
 
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
+
+  function getImageUrl(imagePath: string) {
+    return `http://localhost:3000/${imagePath.replace(/\\/g, '/')}`;
+  }
 
   useEffect(() => {
     async function fetchWorkout() {
@@ -82,6 +87,15 @@ export default function WorkoutDetailScreen({
         <Text style={styles.subtitle}>
           Workout details
         </Text>
+
+        {workout.imagePath && (
+          <Image
+            source={{
+              uri: getImageUrl(workout.imagePath),
+            }}
+            style={styles.detailImage}
+          />
+        )}
 
         <View style={styles.card}>
 
@@ -199,5 +213,13 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.error,
     fontSize: 16,
+  },
+
+  detailImage: {
+    width: '100%',
+    height: 350,
+    borderRadius: 16,
+    marginBottom: spacing.lg,
+    resizeMode: 'cover',
   },
 });

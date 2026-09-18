@@ -2,6 +2,7 @@ import { AuthUser } from '../features/auth/auth.types';
 import { logout } from '../features/auth/auth.api';
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
+import * as ImagePicker from 'expo-image-picker';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,6 +13,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 
 import { colors } from '../theme/colors';
@@ -36,14 +38,23 @@ interface Workout {
   title: string;
   durationHours: number;
   notes: string;
-  //imagePath?: string;
-  //date?: date;
+  imagePath: string;
+  //date?: Date;
+}
+
+interface WorkoutScreenProps {
+  user: AuthUser;
+  onLogout: () => void;
 }
 
 export default function WorkoutScreen({
   user,
   onLogout,
 }: WorkoutScreenProps) {
+
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const navigation = useNavigation<WorkoutNavigationProp>();
 
@@ -56,6 +67,29 @@ export default function WorkoutScreen({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  async function pickImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+
+      setImageUri(asset.uri);
+      setImageName(asset.fileName ?? 'workout-image.jpg');
+
+      if (asset.file) {
+        setImageFile(asset.file);
+      }
+    }
+  }
+
+  function getImageUrl(imagePath: string) {
+    return `http://localhost:3000/${imagePath.replace(/\\/g, '/')}`;
+  }
 
   async function fetchWorkouts() {
     try {
@@ -81,20 +115,37 @@ export default function WorkoutScreen({
     setLoading(true);
 
     try {
-      await api.post('/workout/create', {
-        title,
-        durationHours,
-        notes,
-      });
+      const formData = new FormData();
+
+      formData.append(
+        'workout',
+        JSON.stringify({
+          title,
+          durationHours,
+          notes,
+        })
+      );
+
+      if (imageFile) {
+        formData.append(
+          'workoutImage',
+          imageFile
+        );
+      }
+
+      await api.post('/workout/create', formData);
 
       setTitle('');
       setDurationHours('');
       setNotes('');
+      setImageUri(null);
+      setImageName(null);
+      setImageFile(null);
 
       await fetchWorkouts();
 
     } catch (error) {
-      console.error(error);
+      console.error('Workout creation failed:', error);
       setError('Workout could not be created.');
     } finally {
       setLoading(false);
@@ -103,24 +154,50 @@ export default function WorkoutScreen({
 
   function renderWorkout({ item }: { item: Workout }) {
     return (
-      <TouchableOpacity style={styles.workoutCard}
+      <TouchableOpacity
+        style={styles.workoutCard}
         onPress={() => {
           navigation.navigate('WorkoutDetail', {
             id: item._id,
           });
         }}
       >
-        <Text style={styles.workoutTitle}>
-          {item.title}
-        </Text>
+        <View style={styles.workoutCardContent}>
 
-        <Text style={styles.workoutInfo}>
-          Duration hours: {item.durationHours} h
-        </Text>
+          {/* INFORMATION - approximately 2/3 of the card */}
+          <View style={styles.workoutInfoContainer}>
+            <Text style={styles.workoutTitle}>
+              {item.title}
+            </Text>
 
-        <Text style={styles.workoutInfo}>
-          Note: {item.notes}
-        </Text>
+            <Text style={styles.workoutInfo}>
+              Duration hours: {item.durationHours} h
+            </Text>
+
+            <Text style={styles.workoutInfo}>
+              Note: {item.notes}
+            </Text>
+          </View>
+
+          {/* IMAGE - approximately 1/3 of the card */}
+          <View style={styles.workoutImageContainer}>
+            {item.imagePath ? (
+              <Image
+                source={{
+                  uri: getImageUrl(item.imagePath),
+                }}
+                style={styles.workoutImage}
+              />
+            ) : (
+              <View style={styles.noImage}>
+                <Text style={styles.noImageText}>
+                  No image
+                </Text>
+              </View>
+            )}
+          </View>
+
+        </View>
       </TouchableOpacity>
     );
   }
@@ -171,8 +248,6 @@ export default function WorkoutScreen({
               placeholder="Workout title"
               value={title}
               onChangeText={setTitle}
-              autoCapitalize="none"
-              autoCorrect={false}
               editable={!loading}
             />
 
@@ -181,8 +256,7 @@ export default function WorkoutScreen({
               placeholder="Amount of hours"
               value={durationHours}
               onChangeText={setDurationHours}
-              autoCapitalize="none"
-              autoCorrect={false}
+              keyboardType="numeric"
               editable={!loading}
             />
 
@@ -191,10 +265,25 @@ export default function WorkoutScreen({
               placeholder="Notes"
               value={notes}
               onChangeText={setNotes}
-              autoCapitalize="none"
-              autoCorrect={false}
               editable={!loading}
             />
+
+            <TouchableOpacity
+              style={styles.imageButton}
+              onPress={pickImage}
+              disabled={loading}
+            >
+              <Text style={styles.imageButtonText}>
+                {imageUri ? 'Change image' : 'Choose image'}
+              </Text>
+            </TouchableOpacity>
+
+            {imageUri && (
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.previewImage}
+              />
+            )}
 
             {error ? (
               <Text style={styles.error}>
@@ -288,6 +377,42 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
 
+  workoutCardContent: {
+    flexDirection: 'row',
+  },
+
+  workoutImageContainer: {
+    width: '33%',
+    height: 120,
+    marginRight: spacing.md,
+  },
+
+  workoutImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    resizeMode: 'cover',
+  },
+
+  noImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    backgroundColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  noImageText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+
+  workoutInfoContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+
   workoutTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -338,5 +463,28 @@ const styles = StyleSheet.create({
 
   buttonDisabled: {
     opacity: 0.6,
+  },
+
+  imageButton: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+
+  imageButtonText: {
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: spacing.md,
   },
 });
